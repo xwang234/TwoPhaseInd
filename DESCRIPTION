@@ -1,0 +1,22 @@
+Package: TwoPhaseInd
+Type: Package
+Title: Two-Phase Independence
+Version: 1.1.0
+Authors@R: c(person("James", "Dai", role = c("aut", "cre"),
+		     email = "jdai@fredhutch.org"),
+	      person("Jack", "Dongarra", role = c("ctb", "cph"), comment="for source file blas.f"),
+		  person("Robert", "Gentleman", role = c("ctb", "cph"), comment="for source file blas.f and dqr.f"),
+		  person("ROSS", "Ihaka", role = c("ctb", "cph"), comment="for source file blas.f and dqr.f"),
+		  person("R Core Team", role = c("ctb", "cph"), comment="for source file blas.f and dqr.f"))
+Author: James Dai [aut, cre],
+	Jack Dongarra [ctb, cph] (for source file blas.f),
+	Robert Gentleman [ctb, cph] (for source file blas.f and dqr.f),
+	ROSS Ihaka [ctb, cph] (for source file blas.f and dqr.f),
+	R Core Team [ctb, cph] (for source file blas.f and dqr.f)
+Maintainer: James Dai <jdai@fredhutch.org>
+Description: Estimation of gene-treatment interactions in randomized clinical trials exploiting gene-treatment independence.
+License: GPL (>= 2)
+LazyLoad: no
+Packaged: 2016-01-20 19:13:56 UTC; Administrator
+NeedsCompilation: yes
+Imports: survival

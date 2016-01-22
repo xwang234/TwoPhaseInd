@@ -1,0 +1,355 @@
+%
+% NOTE -- ONLY EDIT THE .Rnw FILE!!!  The .tex file is
+% likely to be overwritten.
+%
+%\VignetteIndexEntry{TwoPhaseInd}
+%\VignetteDepends{}
+%\VignetteKeywords{Documentation}
+%\VignettePackage{TwoPhaseInd}
+\documentclass[12pt]{article}
+
+\usepackage{times}
+\usepackage{hyperref}
+%\usepackage[authoryear,round]{natbib}
+
+\textwidth=6.2in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+\newcommand{\scscst}{\scriptscriptstyle}
+\newcommand{\scst}{\scriptstyle}
+
+\newcommand{\R}{{\textsf{R}}}
+\newcommand{\code}[1]{{\texttt{#1}}}
+\newcommand{\term}[1]{{\emph{#1}}}
+\newcommand{\Rpackage}[1]{\textsf{#1}}
+\newcommand{\Rfunction}[1]{\texttt{#1}}
+\newcommand{\Robject}[1]{\texttt{#1}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\Rmethod}[1]{{\textit{#1}}}
+\newcommand{\Rfunarg}[1]{{\textit{#1}}}
+
+%\bibliographystyle{plainnat}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{The \Rpackage{TwoPhaseInd} package: Estimation of gene-treatment interactions in randomized clinical trials exploiting gene-treatment independence}
+\author{Xiaoyu Wang, James Y. Dai}
+\maketitle
+
+\section{Introduction}
+
+In randomized clinical trials, there are often ancillary studies that uses outcome-dependent sampling to identify baseline genetic markers that modify treatment effect. The \Rpackage{TwoPhaseInd}  package assembles several functions to estimate gene-treatment interactions in randomized clinical trials exploiting gene-treatment independence in case-control sampling and case-cohort sampling. For case-control sampling, it computes two estimators- semiparametric maximum likelihood estimator exploiting (SPMLE) and maximum estimated likelihood estimator (MELE), exploiting the treatment-covariate independence resulted from randomization in two-phase randomized trials \cite{Dai2009}. For case-cohort sampling, it has a function (acoarm) to estimate parameters in a cox regression model by a two-stage estimation procedure developed for augmented case-only designs \cite{Dai2015}.
+
+<<loadLibrary, echo=FALSE, results=hide>>=
+
+library(TwoPhaseInd)
+@
+\section{SPMLE}
+
+We took a WHI biomarker study  to illustrate our methods. The aforementioned 29 biomarkers were picked by WHI investigators as markers that are possibly associated with either stroke, venous thrombotic disease, or myocardial infarction. A comprehensive analysis of these samples was published by \cite{Kooperberg2007}. The results of this particular biomarker example were shown in \cite{Dai2009}. The methodologies for estimating SPMLE and EMLE can be found in \cite{Dai2009}.
+
+<<whiBioMarker>>=
+data(whiBioMarker)
+
+dim(whiBioMarker)
+str(whiBioMarker)
+
+@ 
+Here is an example of estimating SPMLE without exploiting independent and with no confounding factors:
+
+<<spmleNonIndNoExtra>>=
+spmleNonIndNoExtra <- spmle(data=whiBioMarker,
+                            ## dataset
+                 response="stroke",
+                 ## response variable
+                 treatment="hrtdisp",
+                 ## treatment variable
+                 BaselineMarker="papbl",
+                 ## environment variable
+                 extra=NULL,
+                 phase="phase",
+                 ## phase indicator (1 and 2)
+                 ind=FALSE
+                 ## independent or non-indepentent
+)
+
+spmleNonIndNoExtra
+@ 
+
+Here is an example of SPMLE with exploiting independent and with no confounding factors:
+
+<<spmleIndNoExtra>>=
+spmleIndNoExtra <- spmle(data=whiBioMarker,
+                         ## dataset
+              response="stroke",
+              ## response variable
+              treatment="hrtdisp",
+              ## treatment variable
+              BaselineMarker="papbl",
+              ## environment variable
+              extra=NULL,
+              phase="phase",
+              ## phase indicator
+              ind=TRUE
+              ## independent or non-indepentent
+)
+
+spmleIndNoExtra
+@ 
+
+Here is an example of estimating SPMLE without exploiting independent and with confounding factors:
+<<spmleNonIndExtra>>=
+spmleNonIndExtra <- spmle(data=whiBioMarker,
+                          ## dataset
+               response="stroke",
+               ## response variable
+               treatment="hrtdisp",
+               ## treatment variable
+               BaselineMarker="papbl",
+               ## environment variable
+               extra=c(
+                       "age"
+                       ## age
+                       ## physical activity levels
+                        , "dias"
+                       ## diabetes
+                        , "hyp"
+                       ## hypertension
+                        , "syst"
+                       ## systolic
+                        , "diabtrt"
+                       ## diastolic BP
+                        , "lmsepi"
+                       ## waist:hip ratio
+                            ),
+               ## extra variable(s)
+               phase="phase",
+               ## phase indicator
+               ind=FALSE
+               ## independent or non-indepentent
+)
+
+spmleNonIndExtra
+@ 
+
+Here is an example of estimating SPMLE with exploiting independent and with confounding factors:
+
+<<spmleIndExtra>>=
+spmleIndExtra <- spmle(data=whiBioMarker,
+                       ## dataset
+            response="stroke",
+            ## response variable
+            treatment="hrtdisp",
+            ## treatment variable
+            BaselineMarker="papbl",
+            ## environment variable
+            extra=c(
+               "age"
+               ## age
+                		## physical activity levels
+              , "dias"
+              ## diabetes
+              , "hyp"
+              ## hypertension
+              , "syst"
+              ## systolic
+              , "diabtrt"
+              ## diastolic BP
+              , "lmsepi"
+              ## waist:hip ratio
+                 ),
+            ## extra variable(s)
+            phase="phase",
+            ## phase indicator
+            ind=TRUE
+            ## independent or non-indepentent
+)
+
+spmleIndExtra
+@ 
+
+\section{MELE}
+Here is an example of MELE with exploiting independent and with no confounding factors:
+
+<<melIndNoExtra>>=
+melIndNoExtra <- mele(data=whiBioMarker,
+                      ## dataset
+            response="stroke",
+            ## response variable
+            treatment="hrtdisp",
+            ## treatment variable
+            BaselineMarker="papbl",
+            ## environment variable
+            extra=NULL,
+            phase="phase",
+            ## variable for phase indicator
+            ind=TRUE
+            ## independent or non-indepentent
+)
+melIndNoExtra
+@ 
+
+Here is an example of MELE without exploiting independent with confounding factors:
+  
+<<melNoIndNoExtra>>=
+melNoIndNoExtra <- mele(data=whiBioMarker,
+                        ## dataset
+              response="stroke",
+              ## response variable
+              treatment="hrtdisp",
+              ## treatment variable
+              BaselineMarker="papbl",
+              ## environment variable
+              extra=NULL,
+              phase="phase",
+              ## phase indicator
+              ind=FALSE
+              ## independent or non-indepentent
+)
+melNoIndNoExtra
+@ 
+
+Here is an example of MELE with exploiting independent and with confounding factors:
+
+<<melIndExtra>>=
+melIndExtra <- mele(data=whiBioMarker,
+                    ## dataset
+          response="stroke",
+          ## response variable
+          treatment="hrtdisp",
+          ## treatment variable
+          BaselineMarker="papbl",
+          ## environment variable
+          extra=c(
+             "age"
+             ## age
+                		## physical activity levels
+              , "dias"
+             ## diabetes
+              , "hyp"
+             ## hypertension
+              , "syst"
+             ## systolic
+              , "diabtrt"
+             ## diastolic BP
+              , "lmsepi"
+             ## waist:hip ratio
+              ),
+          ## extra variable(s)
+          phase="phase",
+          ## phase indicator
+          ind=TRUE
+          ## independent or non-indepentent
+)
+melIndExtra
+@ 
+
+Here is an example of MELE without exploiting independent and with confounding factors:
+  
+<<melNoIndExtra>>=
+melNoIndExtra <- mele(data=whiBioMarker,
+                      ## dataset
+            response="stroke",
+            ## response variable
+            treatment="hrtdisp",
+            ## treatment variable
+            BaselineMarker="papbl",
+            ## environment variable
+            extra=c(
+                "age"
+                ## age
+                		## physical activity levels
+                , "dias"
+                ## diabetes
+                , "hyp"
+                ## hypertension
+                , "syst"
+                ## systolic
+                , "diabtrt"
+                ## diastolic BP
+                , "lmsepi"
+                ## waist:hip ratio
+                ),
+            ## extra variable(s)
+            phase="phase",
+            ## phase indicator
+            ind=FALSE
+            ## independent or non-indepentent
+)
+melNoIndExtra
+@ 
+
+\section{ACOARM}
+<<data>>=
+data(acodata)
+
+dim(acodata)
+str(acodata)
+
+@ 
+
+For two-arm, placebo-controlled trials with rare failure time endpoints, we can  augment the case-only design with random samples of controls from both arms, as in the classical case-cohort sampling scheme, or with a random sample of controls from the active treatment arm only. We show that these designs can identify all parameters in a Cox model and that the efficient case-only estimator can be incorporated in a two-step plug-in procedure\cite{Dai2015}. A data example was shown in \cite{Dai2015} that incorporating case-only estimators in the classical case-cohort design improves the precision of all estimated parameters; sampling controls only in the active treatment arm attains a similar level of efficiency.  Here is an example of ACO using controls from the placebo arm.
+<<rfit0>>=
+rfit0 <- acoarm(data=acodata,
+                 svtime="vacc1_evinf",
+                 event="f_evinf",
+                 treatment="f_treat",
+                 BaselineMarker="fcgr2a.3",
+                 id="ptid",
+                 subcohort="subcoh",
+                 esttype=1,
+                 augment=0,
+                 extra=c("f_agele30","f_hsv_2","f_ad5gt18","f_crcm","any_drug","num_male_part_cat","uias","uras")) 
+rfit0
+@
+
+Here is an example of ACO using controls from the active arm
+<<rfit1>>=
+rfit1 <- acoarm(data=acodata,
+                 svtime="vacc1_evinf",
+                 event="f_evinf",
+                 treatment="f_treat",
+                 BaselineMarker="fcgr2a.3",
+                 id="ptid",
+                 subcohort="subcoh",
+                 esttype=1,
+                 augment=1,
+                 extra=c("f_agele30","f_hsv_2","f_ad5gt18","f_crcm","any_drug","num_male_part_cat","uias","uras")) 
+rfit1
+@
+
+Here is an example of ACO using controls from both arms
+<<rfit2>>=
+rfit2 <- acoarm(data=acodata,
+                 svtime="vacc1_evinf",
+                 event="f_evinf",
+                 treatment="f_treat",
+                 BaselineMarker="fcgr2a.3",
+                 id="ptid",
+                 subcohort="subcoh",
+                 esttype=1,
+                 augment=2,
+                 extra=c("f_agele30","f_hsv_2","f_ad5gt18","f_crcm","any_drug","num_male_part_cat","uias","uras")) 
+rfit2
+@
+
+\section{Session Information}
+
+The version number of \R{} and packages loaded for generating the vignette were:
+
+\begin{verbatim}
+<<sessionInfo, echo=FALSE, results=tex>>=
+sessionInfo()
+@
+\end{verbatim}
+
+\bibliographystyle{plain}
+\bibliography{TwoPhaseInd}
+
+\end{document}
+
